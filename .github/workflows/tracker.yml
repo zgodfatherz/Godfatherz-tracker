@@ -1,0 +1,41 @@
+name: BGMI Code Tracker
+
+on:
+  schedule:
+    # Runs automatically every 10 minutes, 24/7/365
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows you to manually trigger it anytime
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Tracker Bot
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python bot.py
+
+      - name: Save Cache History
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add seen_entries.json || true
+          git commit -m "Update seen entries cache [skip ci]" || echo "No changes to commit"
+          git push || echo "No push required"
+          
