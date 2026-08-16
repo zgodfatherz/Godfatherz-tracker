@@ -10,16 +10,19 @@ CACHE_FILE = "seen_entries.json"
 # Advanced stealth scraper to bypass 403 Firewalls
 scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'windows', 'desktop': True})
 
-# Instant Direct Feeds (Fixed YouTube ID)
+# Direct high-priority feeds + Google News fallback
 FEEDS = {
     "Sportskeeda Esports": "https://www.sportskeeda.com/esports/feed",
+    "TalkEsport": "https://www.talkesport.com/feed/",
+    "Gizmochina": "https://www.gizmochina.com/feed/",
     "BGMI Official YouTube": "https://www.youtube.com/feeds/videos.xml?channel_id=UCe31NPEeRGO0hcznx6Tdb-g",
     "Google News Fallback": "https://news.google.com/rss/search?q=BGMI+redeem+code+when:1d&hl=en-IN&gl=IN&ceid=IN:en"
 }
 
+# STRICT keywords to prevent false alarms like "sensitivity code" or general outfits
 TRIGGER_KEYWORDS = [
-    "redeem", "code", "reward", "redemption", "free uc", 
-    "diver set", "outfit", "glacier", "coupon", "battlegrounds"
+    "redeem code", "redemption code", "promo code", 
+    "gift code", "free uc", "reward code", "coupon code"
 ]
 
 def load_cache():
@@ -63,7 +66,7 @@ def check_feeds():
         try:
             response = scraper.get(url, timeout=12)
             if response.status_code != 200:
-                continue # Fail silently, try again next loop
+                continue
 
             feed = feedparser.parse(response.content)
             for entry in feed.entries:
@@ -88,3 +91,4 @@ def check_feeds():
 
 if __name__ == "__main__":
     check_feeds()
+    
